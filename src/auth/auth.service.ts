@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -12,41 +14,32 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
+   async register(registerDto: RegisterDto) {
+    const existing = await this.userRepository.findOne({
+      where: { email: registerDto.email },
+    });
+    if (existing) throw new ConflictException('Email already registered');
 
-  async register(registerDto: RegisterDto) {
-    const user = this.userRepository.create(registerDto);
-
-    return this.userRepository.save(user);
+    const hashed = await bcrypt.hash(registerDto.password, 10);
+    const user = await this.userRepository.save(
+      this.userRepository.create({ ...registerDto, password: hashed }),
+    );
+    return { id: user.id, name: user.name, email: user.email };
   }
 
-  async login(loginDto: LoginDto) {
+    async login(loginDto: LoginDto) {
     const user = await this.userRepository.findOne({
       where: { email: loginDto.email },
     });
-
-    if (!user) {
-      return {
-        message: 'Invalid email or password',
-      };
+    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+      throw new UnauthorizedException('Invalid email or password');
     }
-
-    if (user.password !== loginDto.password) {
-      return {
-        message: 'Invalid email or password',
-      };
-    }
-
     return {
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
+      access_token: this.jwtService.sign({ sub: user.id, email: user.email }),
     };
   }
-
   async logout() {
   return {
     message: 'Logout successful',
