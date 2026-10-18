@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 import { AdminService } from './admin.service';
 import { User } from '../users/entities/user.entity';
 import { Provider } from '../providers/entities/provider.entity';
@@ -40,27 +39,6 @@ describe('AdminService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-  });
-
-  it('creates an administrator in the users table with a hashed password', async () => {
-    const dto = {
-      name: 'Admin User',
-      email: 'admin@example.com',
-      password: 'securePass123',
-    };
-    users.findOne.mockResolvedValue(null);
-    users.save.mockImplementation(async (user) => user as User);
-
-    const result = await service.createAdmin(dto);
-
-    expect(result).toMatchObject({
-      name: dto.name,
-      email: dto.email,
-      role: 'admin',
-      status: 'active',
-    });
-    expect(result).not.toHaveProperty('password');
-    expect(await bcrypt.compare(dto.password, users.save.mock.calls[0][0].password)).toBe(true);
   });
 
   it('includes provider profiles with users without exposing passwords', async () => {

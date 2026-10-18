@@ -11,7 +11,7 @@ export class ReportUserDto {
   @IsEnum(ReportReason) reason: ReportReason;
 
   @ApiPropertyOptional({
-    example: 'The user sent repeated unwanted messages.',
+    example: 'The user sent repeated unwanted messages he said he is from phoka.',
     maxLength: 1000,
   })
   @IsOptional() @IsString() @MaxLength(1000) details?: string;

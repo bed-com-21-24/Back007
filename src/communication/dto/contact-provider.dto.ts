@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ContactProviderDto {
   @ApiProperty({
-    example: 'Hello, are you available to help with a repair?',
+    example: 'Hello, katundu uja timpeza or not?',
     minLength: 1,
     maxLength: 2000,
   })

@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Delete,
   Param,
@@ -10,12 +9,10 @@ import {
 } from '@nestjs/common';
 
 import { AdminService } from './admin.service';
-import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { RejectProviderDto } from './dto/reject-provider.dto';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
 import {
-  ApiBody,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -50,14 +47,6 @@ export class AdminController {
     @Body() dto: UpdateUserDto,
   ) {
     return this.adminService.updateUser(id, dto);
-  }
-
-  @Post('admins')
-  @ApiOperation({ summary: 'Create another administrator account' })
-  @ApiBody({ type: CreateAdminDto })
-  @ApiResponse({ status: 201, description: 'Administrator account created' })
-  createAdmin(@Body() dto: CreateAdminDto) {
-    return this.adminService.createAdmin(dto);
   }
 
   @Patch('users/:id/suspend')

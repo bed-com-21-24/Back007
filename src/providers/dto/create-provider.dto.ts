@@ -8,7 +8,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateProviderDto {
   @ApiProperty({
-    example: 'Alex Banda Plumbing',
+    example: 'maxwell chitukula',
     maxLength: 150,
     description: 'Name shown on the provider listing',
   })
@@ -18,7 +18,7 @@ export class CreateProviderDto {
   providerName!: string;
 
   @ApiPropertyOptional({
-    example: 'Licensed plumber with 10 years of experience.',
+    example: 'Licensed cellphone repairer with 5 years of experience.',
     maxLength: 2000,
   })
   @IsOptional()
@@ -26,7 +26,7 @@ export class CreateProviderDto {
   @MaxLength(2000)
   bio?: string;
 
-  @ApiPropertyOptional({ example: 'Lilongwe', maxLength: 150 })
+  @ApiPropertyOptional({ example: 'Chitipa', maxLength: 150 })
   @IsOptional()
   @IsString()
   @MaxLength(150)
