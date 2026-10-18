@@ -15,8 +15,18 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('returns a generic welcome when no name is provided', () => {
+      expect(appController.getHello()).toBe('Welcome to Skillz Directory.');
+    });
+
+    it('includes the provided user name in the welcome message', () => {
+      expect(appController.getHello('Alex')).toBe(
+        'Hello, Alex! Welcome to Skillz Directory.',
+      );
+    });
+
+    it('ignores whitespace-only names', () => {
+      expect(appController.getHello('  ')).toBe('Welcome to Skillz Directory.');
     });
   });
 });

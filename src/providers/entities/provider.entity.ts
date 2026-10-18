@@ -3,8 +3,11 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  JoinColumn,
+  OneToOne,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('providers')
 export class Provider {
@@ -13,6 +16,10 @@ export class Provider {
 
   @Column({ type: 'uuid', unique: true })
   userId!: string;
+
+  @OneToOne(() => User, (user) => user.provider, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  user!: User;
 
   @Column({ type: 'varchar', length: 150 })
   providerName!: string;
@@ -29,6 +36,12 @@ export class Provider {
     default: () => "'{}'",
   })
   skills!: string[];
+
+  @Column({ type: 'varchar', length: 20, default: 'pending' })
+  status!: string;
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  rejectionReason!: string | null;
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -16,6 +16,12 @@ import { ProvidersService } from './providers.service';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
 import { UpdateProviderSkillsDto } from './dto/update-provider-skills.dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 type AuthenticatedRequest = Request & {
   user?: {
@@ -26,6 +32,8 @@ type AuthenticatedRequest = Request & {
 
 @Controller('providers')
 @UseGuards(AuthGuard('jwt'))
+@ApiTags('providers')
+@ApiBearerAuth()
 export class ProvidersController {
   constructor(
     private readonly providersService: ProvidersService,
@@ -44,6 +52,8 @@ export class ProvidersController {
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create the current user provider listing' })
+  @ApiResponse({ status: 201, description: 'Provider listing created' })
   create(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateProviderDto,
@@ -55,6 +65,8 @@ export class ProvidersController {
   }
 
   @Get('me')
+  @ApiOperation({ summary: 'Get the current user provider listing' })
+  @ApiResponse({ status: 200, description: 'Provider listing returned' })
   findMe(@Req() req: AuthenticatedRequest) {
     return this.providersService.findMe(
       this.getUserId(req),
@@ -62,6 +74,8 @@ export class ProvidersController {
   }
 
   @Patch('me')
+  @ApiOperation({ summary: 'Update the current user provider listing' })
+  @ApiResponse({ status: 200, description: 'Provider listing updated' })
   updateMe(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateProviderDto,
@@ -73,6 +87,8 @@ export class ProvidersController {
   }
 
   @Put('me/skills')
+  @ApiOperation({ summary: 'Replace the current provider skills' })
+  @ApiResponse({ status: 200, description: 'Provider skills updated' })
   updateSkills(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateProviderSkillsDto,

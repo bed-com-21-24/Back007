@@ -1,33 +1,35 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
-  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { User, Provider } from './entities/admin.entity';
+import { User } from '../users/entities/user.entity';
+import { Provider } from '../providers/entities/provider.entity';
+import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { RejectProviderDto } from './dto/reject-provider.dto';
+import { UpdateUserDto } from '../users/dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
   constructor(
-    @Optional()
     @InjectRepository(User)
-    private readonly userRepository?: Repository<User>,
+    private readonly userRepository: Repository<User>,
 
-    @Optional()
     @InjectRepository(Provider)
-    private readonly providerRepository?: Repository<Provider>,
+    private readonly providerRepository: Repository<Provider>,
   ) {}
 
   private async countUsers(): Promise<number> {
-    return this.userRepository ? this.userRepository.count() : 0;
+    return this.userRepository.count();
   }
 
   private async countProviders(): Promise<number> {
-    return this.providerRepository ? this.providerRepository.count() : 0;
+    return this.providerRepository.count();
   }
 
   async getDashboard() {
@@ -38,14 +40,50 @@ export class AdminService {
   }
 
   async getUsers() {
-    return this.userRepository ? this.userRepository.find() : [];
+    const users = await this.userRepository.find({
+      relations: { provider: true },
+    });
+
+    return users.map(({ password, provider, ...user }) => ({
+      ...user,
+      provider: provider
+        ? (({ user: linkedUser, ...publicProvider }) => publicProvider)(provider)
+        : null,
+    }));
   }
 
-  async suspendUser(id: number) {
-    if (!this.userRepository) {
-      return { id, status: 'suspended' };
+  async createAdmin(dto: CreateAdminDto) {
+    const existing = await this.userRepository.findOne({
+      where: { email: dto.email },
+    });
+    if (existing) {
+      throw new ConflictException('Email already registered');
     }
 
+    const admin = this.userRepository.create({
+      ...dto,
+      password: await bcrypt.hash(dto.password, 10),
+      role: 'admin',
+      status: 'active',
+    });
+    const savedAdmin = await this.userRepository.save(admin);
+    const { password, ...safeAdmin } = savedAdmin;
+    return safeAdmin;
+  }
+
+  async updateUser(id: string, dto: UpdateUserDto) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    Object.assign(user, dto);
+    const savedUser = await this.userRepository.save(user);
+    const { password, ...safeUser } = savedUser;
+    return safeUser;
+  }
+
+  async suspendUser(id: string) {
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) {
@@ -54,14 +92,12 @@ export class AdminService {
 
     user.status = 'suspended';
 
-    return this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+    const { password, ...safeUser } = savedUser;
+    return safeUser;
   }
 
-  async banUser(id: number) {
-    if (!this.userRepository) {
-      return { id, status: 'banned' };
-    }
-
+  async banUser(id: string) {
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) {
@@ -70,14 +106,12 @@ export class AdminService {
 
     user.status = 'banned';
 
-    return this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+    const { password, ...safeUser } = savedUser;
+    return safeUser;
   }
 
-  async deleteProvider(id: number) {
-    if (!this.providerRepository) {
-      return { message: 'Provider deleted successfully' };
-    }
-
+  async deleteProvider(id: string) {
     const provider = await this.providerRepository.findOneBy({ id });
 
     if (!provider) {
@@ -91,11 +125,7 @@ export class AdminService {
     };
   }
 
-  async approveProvider(id: number) {
-    if (!this.providerRepository) {
-      return { id, status: 'approved' };
-    }
-
+  async approveProvider(id: string) {
     const provider = await this.providerRepository.findOneBy({ id });
 
     if (!provider) {
@@ -107,28 +137,24 @@ export class AdminService {
     return this.providerRepository.save(provider);
   }
 
-  async rejectProvider(id: number, dto: RejectProviderDto) {
-    if (!this.providerRepository) {
-      return { id, status: 'rejected', rejectionReason: dto.reason };
-    }
-
+  async rejectProvider(id: string, dto: RejectProviderDto) {
     const provider = await this.providerRepository.findOneBy({ id });
 
     if (!provider) {
       throw new NotFoundException('Provider not found');
     }
 
-    provider.status = 'rejected';
-    provider.rejectionReason = dto.reason;
+    await this.providerRepository.remove(provider);
 
-    return this.providerRepository.save(provider);
+    return {
+      id: provider.id,
+      status: 'rejected',
+      rejectionReason: dto.reason,
+      message: 'Provider profile rejected and removed; user account remains active',
+    };
   }
 
-  async updateUserRole(id: number, dto: UpdateUserRoleDto) {
-    if (!this.userRepository) {
-      return { id, role: dto.role };
-    }
-
+  async updateUserRole(id: string, dto: UpdateUserRoleDto) {
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) {
@@ -137,7 +163,9 @@ export class AdminService {
 
     user.role = dto.role;
 
-    return this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+    const { password, ...safeUser } = savedUser;
+    return safeUser;
   }
 
   async getUsageReport() {
