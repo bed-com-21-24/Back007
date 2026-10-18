@@ -5,7 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
+import { CommunicationModule } from './communication/communication.module';
+import { ProvidersModule } from './providers/providers.module';
+import { SafetyModule } from './safety/safety.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -24,6 +29,11 @@ import { AdminModule } from './admin/admin.module';
       synchronize: false,
     }),
 
+    AuthModule,
+    UsersModule,
+    ProvidersModule,
+    SafetyModule,
+    CommunicationModule,
     AdminModule,
   ],
   controllers: [AppController],

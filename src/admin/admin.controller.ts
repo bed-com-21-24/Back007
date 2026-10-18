@@ -15,6 +15,7 @@ import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { RejectProviderDto } from './dto/reject-provider.dto';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
 import {
+  ApiBody,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -53,6 +54,7 @@ export class AdminController {
 
   @Post('admins')
   @ApiOperation({ summary: 'Create another administrator account' })
+  @ApiBody({ type: CreateAdminDto })
   @ApiResponse({ status: 201, description: 'Administrator account created' })
   createAdmin(@Body() dto: CreateAdminDto) {
     return this.adminService.createAdmin(dto);
