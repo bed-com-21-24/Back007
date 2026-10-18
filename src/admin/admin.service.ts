@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,9 +8,11 @@ import { Repository } from 'typeorm';
 
 import { User } from '../users/entities/user.entity';
 import { Provider } from '../providers/entities/provider.entity';
+import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { RejectProviderDto } from './dto/reject-provider.dto';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
@@ -47,6 +50,25 @@ export class AdminService {
         ? (({ user: linkedUser, ...publicProvider }) => publicProvider)(provider)
         : null,
     }));
+  }
+
+  async createAdmin(dto: CreateAdminDto) {
+    const existing = await this.userRepository.findOne({
+      where: { email: dto.email },
+    });
+    if (existing) {
+      throw new ConflictException('Email already registered');
+    }
+
+    const admin = this.userRepository.create({
+      ...dto,
+      password: await bcrypt.hash(dto.password, 10),
+      role: 'admin',
+      status: 'active',
+    });
+    const savedAdmin = await this.userRepository.save(admin);
+    const { password, ...safeAdmin } = savedAdmin;
+    return safeAdmin;
   }
 
   async updateUser(id: string, dto: UpdateUserDto) {

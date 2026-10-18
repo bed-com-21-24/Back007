@@ -15,6 +15,7 @@ describe('AdminController', () => {
             getDashboard: jest.fn(),
             getUsers: jest.fn(),
             updateUser: jest.fn(),
+            createAdmin: jest.fn(),
             suspendUser: jest.fn(),
             banUser: jest.fn(),
             deleteProvider: jest.fn(),
