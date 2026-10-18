@@ -16,11 +16,11 @@ export class ConversationsService {
   ) {}
 
   async contactProvider(residentId: string, providerId: string, text: string) {
-    const provider = await this.providers.findOne({ where: { id: providerId }, relations: ['user'] });
+    const provider = await this.providers.findOne({ where: { id: providerId } });
     if (!provider) throw new NotFoundException('Provider not found');
     // TODO: if providers have an approval status (FR-23), reject unapproved ones
 
-    const providerUserId = provider.user.id;
+    const providerUserId = provider.userId;
     if (providerUserId === residentId) throw new BadRequestException('You cannot contact yourself');
     await this.blocks.assertNotBlocked(residentId, providerUserId);
 
