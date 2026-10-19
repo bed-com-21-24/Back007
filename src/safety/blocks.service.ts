@@ -7,7 +7,7 @@ import { Block } from './entities/block.entity';
 export class BlocksService {
   constructor(@InjectRepository(Block) private repo: Repository<Block>) {}
 
-  async block(blockerId: string, blockedId: string) {
+  async block(blockerId: number, blockedId: number) {
     if (blockerId === blockedId) throw new BadRequestException('You cannot block yourself');
     // TODO: verify the target user exists (inject the Users repository from the auth teammate's module)
     const existing = await this.repo.findOne({ where: { blockerId, blockedId } });
@@ -15,17 +15,17 @@ export class BlocksService {
     return this.repo.save(this.repo.create({ blockerId, blockedId }));
   }
 
-  async unblock(blockerId: string, blockedId: string) {
+  async unblock(blockerId: number, blockedId: number) {
     await this.repo.delete({ blockerId, blockedId });
     return { unblocked: true };
   }
 
-  async isBlockedEitherWay(a: string, b: string) {
+  async isBlockedEitherWay(a: number, b: number) {
     const n = await this.repo.count({ where: [{ blockerId: a, blockedId: b }, { blockerId: b, blockedId: a }] });
     return n > 0;
   }
 
-  async assertNotBlocked(a: string, b: string) {
+  async assertNotBlocked(a: number, b: number) {
     if (await this.isBlockedEitherWay(a, b)) throw new ForbiddenException('You cannot message this user');
   }
 }

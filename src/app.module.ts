@@ -11,6 +11,7 @@ import { CommunicationModule } from './communication/communication.module';
 import { ProvidersModule } from './providers/providers.module';
 import { SafetyModule } from './safety/safety.module';
 import { UsersModule } from './users/users.module';
+import { ConvertUserAndProviderIdsToIntegers1760830000000 } from './database/migrations/1760830000000-ConvertUserAndProviderIdsToIntegers';
 
 @Module({
   imports: [
@@ -26,6 +27,8 @@ import { UsersModule } from './users/users.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE || 'back007_db',
       autoLoadEntities: true,
+      migrations: [ConvertUserAndProviderIdsToIntegers1760830000000],
+      migrationsRun: true,
       synchronize: true,
     }),
 

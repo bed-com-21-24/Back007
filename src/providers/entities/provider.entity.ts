@@ -11,11 +11,11 @@ import { User } from '../../users/entities/user.entity';
 
 @Entity('providers')
 export class Provider {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-  @Column({ type: 'uuid', unique: true })
-  userId!: string;
+  @Column({ type: 'integer', unique: true })
+  userId!: number;
 
   @OneToOne(() => User, (user) => user.provider, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId', referencedColumnName: 'id' })

@@ -18,7 +18,7 @@ export class ProvidersService {
     private readonly providerRepository: Repository<Provider>,
   ) {}
 
-  async create(userId: string, dto: CreateProviderDto) {
+  async create(userId: number, dto: CreateProviderDto) {
     const existing = await this.providerRepository.findOne({
       where: { userId },
     });
@@ -40,7 +40,7 @@ export class ProvidersService {
     return this.providerRepository.save(provider);
   }
 
-  async findMe(userId: string) {
+  async findMe(userId: number) {
     const provider = await this.providerRepository.findOne({
       where: { userId },
     });
@@ -52,7 +52,7 @@ export class ProvidersService {
     return provider;
   }
 
-  async updateMe(userId: string, dto: UpdateProviderDto) {
+  async updateMe(userId: number, dto: UpdateProviderDto) {
     const provider = await this.findMe(userId);
 
     Object.assign(provider, dto);
@@ -61,7 +61,7 @@ export class ProvidersService {
   }
 
   async updateSkills(
-    userId: string,
+    userId: number,
     dto: UpdateProviderSkillsDto,
   ) {
     const provider = await this.findMe(userId);

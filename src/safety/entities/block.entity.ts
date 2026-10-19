@@ -4,7 +4,7 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique } from
 @Unique(['blockerId', 'blockedId'])
 export class Block {
   @PrimaryGeneratedColumn('uuid') id: string;
-  @Column('uuid') blockerId: string;
-  @Column('uuid') blockedId: string;
+  @Column('integer') blockerId: number;
+  @Column('integer') blockedId: number;
   @CreateDateColumn() createdAt: Date;
 }

@@ -20,7 +20,7 @@ export class UsersService {
   }
 
   
-async findMe(id: string) {
+async findMe(id: number) {
   const user = await this.userRepository.findOne({
     where: { id },
   });
@@ -33,7 +33,7 @@ async findMe(id: string) {
   return safeUser;
 }
 
-async updateMe(id: string, dto: UpdateUserDto) {
+async updateMe(id: number, dto: UpdateUserDto) {
   const user = await this.userRepository.findOne({
     where: { id },
   });

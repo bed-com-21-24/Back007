@@ -68,15 +68,15 @@ describe('AdminService', () => {
   it('includes provider profiles with users without exposing passwords', async () => {
     users.find.mockResolvedValue([
       {
-        id: 'user-id',
+        id: 1,
         name: 'Provider User',
         email: 'provider@example.com',
         password: 'hash',
         role: 'resident',
         status: 'active',
         provider: {
-          id: 'provider-id',
-          userId: 'user-id',
+          id: 1,
+          userId: 1,
           providerName: 'Plumber',
           user: { password: 'nested-hash' },
         },
@@ -91,11 +91,11 @@ describe('AdminService', () => {
   });
 
   it('rejects and removes the provider profile without deleting its user', async () => {
-    const provider = { id: 'provider-id', userId: 'user-id' } as Provider;
+    const provider = { id: 1, userId: 1 } as Provider;
     providers.findOneBy.mockResolvedValue(provider);
     providers.remove.mockResolvedValue(provider);
 
-    const result = await service.rejectProvider('provider-id', {
+    const result = await service.rejectProvider(1, {
       reason: 'Does not meet requirements',
     });
 

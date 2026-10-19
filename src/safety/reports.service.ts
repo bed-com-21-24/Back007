@@ -8,7 +8,7 @@ import { Report, ReportStatus } from './entities/report.entity';
 export class ReportsService {
   constructor(@InjectRepository(Report) private repo: Repository<Report>) {}
 
-  async create(reporterId: string, reportedUserId: string, dto: ReportUserDto) {
+  async create(reporterId: number, reportedUserId: number, dto: ReportUserDto) {
     if (reporterId === reportedUserId) throw new BadRequestException('You cannot report yourself');
     const dup = await this.repo.findOne({ where: { reporterId, reportedUserId, status: ReportStatus.PENDING } });
     if (dup) throw new ConflictException('You already have a pending report against this user');
