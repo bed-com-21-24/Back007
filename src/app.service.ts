@@ -6,6 +6,6 @@ export class AppService {
     const userName = name?.trim();
     return userName
       ? `Hello, ${userName}! Welcome to Skillz Directory.`
-      : 'Welcome to Skillz Directory.';
+      : 'Welcome to Skillz Directory takulandilani!.';
   }
 }

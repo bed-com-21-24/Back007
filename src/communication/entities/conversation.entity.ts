@@ -6,9 +6,9 @@ import { Message } from './message.entity';
 export class Conversation {
   @PrimaryGeneratedColumn('uuid') id: string;
 
-  @Index() @Column('uuid') residentId: string;       // resident's USER id
-  @Column('uuid') providerId: string;                // provider PROFILE id (used in the URL)
-  @Index() @Column('uuid') providerUserId: string;   // provider's USER id (for auth and blocking)
+  @Index() @Column('integer') residentId: number;
+  @Column('integer') providerId: number;
+  @Index() @Column('integer') providerUserId: number;
 
   @Column({ type: 'timestamptz', nullable: true }) lastMessageAt: Date | null;
   @Column({ type: 'varchar', length: 140, nullable: true }) lastMessagePreview: string | null;

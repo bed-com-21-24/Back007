@@ -7,12 +7,12 @@ export class CreateAdminDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: 'admin@example.com', format: 'email' })
+  @ApiProperty({ example: 'bed-com-25-24@unima.ac.mw', format: 'email' })
   @IsEmail()
   email: string;
 
   @ApiProperty({
-    example: 'securePass123',
+    example: 'chipalamoto12',
     format: 'password',
     minLength: 8,
   })

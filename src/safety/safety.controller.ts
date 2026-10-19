@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, ParseUUIDPipe, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';   // adjust to the real path and name
 import { BlocksService } from './blocks.service';
 import { ReportsService } from './reports.service';
@@ -20,25 +20,25 @@ export class SafetyController {
 
   @Post(':id/report')
   @ApiOperation({ summary: 'Report a user' })
-  @ApiParam({ name: 'id', description: 'UUID of the reported user' })
+  @ApiParam({ name: 'id', description: 'Numeric ID of the reported user', type: Number })
   @ApiResponse({ status: 201, description: 'User report submitted' })
-  report(@Req() req: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ReportUserDto) {
+  report(@Req() req: any, @Param('id', ParseIntPipe) id: number, @Body() dto: ReportUserDto) {
     return this.reports.create(req.user.id, id, dto);
   }
 
   @Post(':id/block')
   @ApiOperation({ summary: 'Block a user' })
-  @ApiParam({ name: 'id', description: 'UUID of the user to block' })
+  @ApiParam({ name: 'id', description: 'Numeric ID of the user to block', type: Number })
   @ApiResponse({ status: 201, description: 'User blocked' })
-  block(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
+  block(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
     return this.blocks.block(req.user.id, id);
   }
 
   @Delete(':id/block')
   @ApiOperation({ summary: 'Unblock a user' })
-  @ApiParam({ name: 'id', description: 'UUID of the user to unblock' })
+  @ApiParam({ name: 'id', description: 'Numeric ID of the user to unblock', type: Number })
   @ApiResponse({ status: 200, description: 'User unblocked' })
-  unblock(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
+  unblock(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
     return this.blocks.unblock(req.user.id, id);
   }
 }

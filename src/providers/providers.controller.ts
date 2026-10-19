@@ -25,8 +25,8 @@ import {
 
 type AuthenticatedRequest = Request & {
   user?: {
-    id?: string;
-    sub?: string;
+    id?: number;
+    sub?: number;
   };
 };
 
@@ -39,7 +39,7 @@ export class ProvidersController {
     private readonly providersService: ProvidersService,
   ) {}
 
-  private getUserId(req: AuthenticatedRequest): string {
+  private getUserId(req: AuthenticatedRequest): number {
     const userId = req.user?.id ?? req.user?.sub;
 
     if (!userId) {

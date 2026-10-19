@@ -19,7 +19,7 @@ export class UsersController {
   @Get('me')
   @ApiOperation({ summary: 'Get the current user profile' })
   @ApiResponse({ status: 200, description: 'Current user profile returned' })
-  getMe(@Req() req: { user: { id: string } }) {
+  getMe(@Req() req: { user: { id: number } }) {
     return this.usersService.findMe(req.user.id);
   }
 
@@ -27,7 +27,7 @@ export class UsersController {
   @Patch('me')
   @ApiOperation({ summary: 'Update the current user profile' })
   @ApiResponse({ status: 200, description: 'User profile updated' })
-  updateMe(@Req() req: { user: { id: string } }, @Body() dto: UpdateUserDto) {
+  updateMe(@Req() req: { user: { id: number } }, @Body() dto: UpdateUserDto) {
     return this.usersService.updateMe(req.user.id, dto);
   }
 }

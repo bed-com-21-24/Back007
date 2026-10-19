@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -13,7 +13,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: { sub: string; email: string }) {
+  validate(payload: { sub: number; email: string }) {
+    if (!Number.isSafeInteger(payload.sub) || payload.sub < 1) {
+      throw new UnauthorizedException('Invalid user ID in access token');
+    }
+
     return { id: payload.sub, email: payload.email };
   }
 }

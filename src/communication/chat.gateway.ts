@@ -15,6 +15,9 @@ export class ChatGateway implements OnGatewayConnection {
       const raw = client.handshake.auth?.token ?? client.handshake.headers.authorization ?? '';
       const token = String(raw).replace(/^Bearer\s+/i, '');
       const payload = await this.jwt.verifyAsync(token);
+      if (!Number.isSafeInteger(payload.sub) || payload.sub < 1) {
+        throw new Error('Invalid user ID in access token');
+      }
       client.data.userId = payload.sub;                  // adjust if the JWT uses another field
       // TODO: reject banned/suspended users here (ask Mwiza which field holds account status)
       client.join(`user:${payload.sub}`);
@@ -46,7 +49,7 @@ export class ChatGateway implements OnGatewayConnection {
     } catch { /* ignore */ }
   }
 
-  pushMessage(message: Message, participantIds: string[]) {
+  pushMessage(message: Message, participantIds: number[]) {
     participantIds.forEach((id) => this.server.to(`user:${id}`).emit('message:new', message));
   }
 }

@@ -15,7 +15,7 @@ export class ConversationsService {
     private blocks: BlocksService,
   ) {}
 
-  async contactProvider(residentId: string, providerId: string, text: string) {
+  async contactProvider(residentId: number, providerId: number, text: string) {
     const provider = await this.providers.findOne({ where: { id: providerId } });
     if (!provider) throw new NotFoundException('Provider not found');
     // TODO: if providers have an approval status (FR-23), reject unapproved ones
@@ -30,14 +30,14 @@ export class ConversationsService {
     return this.saveMessage(conv, residentId, text);
   }
 
-  list(userId: string) {
+  list(userId: number) {
     return this.convs.find({
       where: [{ residentId: userId }, { providerUserId: userId }],
       order: { lastMessageAt: 'DESC' },
     });
   }
 
-  async getOne(id: string, userId: string, before?: string, limit = 30) {
+  async getOne(id: string, userId: number, before?: string, limit = 30) {
     const conv = await this.getForParticipant(id, userId);
     const where: any = { conversationId: id };
     if (before) where.createdAt = LessThan(new Date(before));
@@ -47,21 +47,21 @@ export class ConversationsService {
     return { conversation: conv, messages: rows.reverse() };
   }
 
-  async sendMessage(conversationId: string, senderId: string, text: string) {
+  async sendMessage(conversationId: string, senderId: number, text: string) {
     const conv = await this.getForParticipant(conversationId, senderId);
     const otherId = conv.residentId === senderId ? conv.providerUserId : conv.residentId;
     await this.blocks.assertNotBlocked(senderId, otherId);
     return this.saveMessage(conv, senderId, text);
   }
 
-  async getForParticipant(id: string, userId: string) {
+  async getForParticipant(id: string, userId: number) {
     const conv = await this.convs.findOne({ where: { id } });
     if (!conv || (conv.residentId !== userId && conv.providerUserId !== userId))
       throw new NotFoundException('Conversation not found');   // same error either way: don't leak existence
     return conv;
   }
 
-  private async saveMessage(conv: Conversation, senderId: string, text: string) {
+  private async saveMessage(conv: Conversation, senderId: number, text: string) {
     const body = text.trim();
     if (!body) throw new BadRequestException('Message cannot be empty');
     const message = await this.msgs.save(this.msgs.create({ conversationId: conv.id, senderId, body }));

@@ -11,7 +11,7 @@ export class Message {
   @JoinColumn({ name: 'conversationId' })
   conversation: Conversation;
 
-  @Column('uuid') senderId: string;
+  @Column('integer') senderId: number;
   @Column('text') body: string;
   @Column({ type: 'timestamptz', nullable: true }) readAt: Date | null;
   @CreateDateColumn() createdAt: Date;

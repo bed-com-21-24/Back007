@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UpdateProviderSkillsDto {
   @ApiProperty({
     type: [String],
-    example: ['Plumbing', 'Pipe repair'],
+    example: ['3d designer', 'phone repair', '3d modeling'],
     description: 'Complete list of provider skills',
   })
   @IsArray()

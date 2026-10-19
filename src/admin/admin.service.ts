@@ -71,7 +71,7 @@ export class AdminService {
     return safeAdmin;
   }
 
-  async updateUser(id: string, dto: UpdateUserDto) {
+  async updateUser(id: number, dto: UpdateUserDto) {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -83,7 +83,7 @@ export class AdminService {
     return safeUser;
   }
 
-  async suspendUser(id: string) {
+  async suspendUser(id: number) {
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) {
@@ -97,7 +97,7 @@ export class AdminService {
     return safeUser;
   }
 
-  async banUser(id: string) {
+  async banUser(id: number) {
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) {
@@ -111,7 +111,7 @@ export class AdminService {
     return safeUser;
   }
 
-  async deleteProvider(id: string) {
+  async deleteProvider(id: number) {
     const provider = await this.providerRepository.findOneBy({ id });
 
     if (!provider) {
@@ -125,7 +125,7 @@ export class AdminService {
     };
   }
 
-  async approveProvider(id: string) {
+  async approveProvider(id: number) {
     const provider = await this.providerRepository.findOneBy({ id });
 
     if (!provider) {
@@ -137,7 +137,7 @@ export class AdminService {
     return this.providerRepository.save(provider);
   }
 
-  async rejectProvider(id: string, dto: RejectProviderDto) {
+  async rejectProvider(id: number, dto: RejectProviderDto) {
     const provider = await this.providerRepository.findOneBy({ id });
 
     if (!provider) {
@@ -154,7 +154,7 @@ export class AdminService {
     };
   }
 
-  async updateUserRole(id: string, dto: UpdateUserRoleDto) {
+  async updateUserRole(id: number, dto: UpdateUserRoleDto) {
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) {

@@ -22,9 +22,9 @@ export class ConversationsController {
 
   @Post('providers/:id/contact')
   @ApiOperation({ summary: 'Contact a provider and start a conversation' })
-  @ApiParam({ name: 'id', description: 'UUID of the provider' })
+  @ApiParam({ name: 'id', description: 'Numeric ID of the provider', type: Number })
   @ApiResponse({ status: 201, description: 'Message sent to provider' })
-  async contact(@Req() req: any, @Param('id', ParseUUIDPipe) id: string, @Body() dto: ContactProviderDto) {
+  async contact(@Req() req: any, @Param('id', ParseIntPipe) id: number, @Body() dto: ContactProviderDto) {
     const { message, participantIds } = await this.service.contactProvider(req.user.id, id, dto.message);
     this.gateway.pushMessage(message, participantIds);
     return message;
