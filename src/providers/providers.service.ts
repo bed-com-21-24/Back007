@@ -24,9 +24,7 @@ export class ProvidersService {
     });
 
     if (existing) {
-      throw new ConflictException(
-        'You already have a provider profile',
-      );
+      throw new ConflictException('You already have a provider profile');
     }
 
     const provider = this.providerRepository.create({
@@ -34,6 +32,10 @@ export class ProvidersService {
       providerName: dto.providerName,
       bio: dto.bio ?? null,
       location: dto.location ?? null,
+      tradeCategory: dto.tradeCategory ?? null,
+      yearsOfExperience: dto.yearsOfExperience ?? 0,
+      latitude: dto.latitude ?? null,
+      longitude: dto.longitude ?? null,
       skills: [],
     });
 
@@ -54,20 +56,13 @@ export class ProvidersService {
 
   async updateMe(userId: number, dto: UpdateProviderDto) {
     const provider = await this.findMe(userId);
-
     Object.assign(provider, dto);
-
     return this.providerRepository.save(provider);
   }
 
-  async updateSkills(
-    userId: number,
-    dto: UpdateProviderSkillsDto,
-  ) {
+  async updateSkills(userId: number, dto: UpdateProviderSkillsDto) {
     const provider = await this.findMe(userId);
-
     provider.skills = dto.skills.map((skill) => skill.trim());
-
     return this.providerRepository.save(provider);
   }
 }

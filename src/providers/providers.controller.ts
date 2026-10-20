@@ -35,19 +35,13 @@ type AuthenticatedRequest = Request & {
 @ApiTags('providers')
 @ApiBearerAuth()
 export class ProvidersController {
-  constructor(
-    private readonly providersService: ProvidersService,
-  ) {}
+  constructor(private readonly providersService: ProvidersService) {}
 
   private getUserId(req: AuthenticatedRequest): number {
     const userId = req.user?.id ?? req.user?.sub;
-
     if (!userId) {
-      throw new UnauthorizedException(
-        'Authenticated user ID not found',
-      );
+      throw new UnauthorizedException('Authenticated user ID not found');
     }
-
     return userId;
   }
 
@@ -58,19 +52,14 @@ export class ProvidersController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateProviderDto,
   ) {
-    return this.providersService.create(
-      this.getUserId(req),
-      dto,
-    );
+    return this.providersService.create(this.getUserId(req), dto);
   }
 
   @Get('me')
   @ApiOperation({ summary: 'Get the current user provider listing' })
   @ApiResponse({ status: 200, description: 'Provider listing returned' })
   findMe(@Req() req: AuthenticatedRequest) {
-    return this.providersService.findMe(
-      this.getUserId(req),
-    );
+    return this.providersService.findMe(this.getUserId(req));
   }
 
   @Patch('me')
@@ -80,10 +69,7 @@ export class ProvidersController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateProviderDto,
   ) {
-    return this.providersService.updateMe(
-      this.getUserId(req),
-      dto,
-    );
+    return this.providersService.updateMe(this.getUserId(req), dto);
   }
 
   @Put('me/skills')
@@ -93,9 +79,6 @@ export class ProvidersController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateProviderSkillsDto,
   ) {
-    return this.providersService.updateSkills(
-      this.getUserId(req),
-      dto,
-    );
+    return this.providersService.updateSkills(this.getUserId(req), dto);
   }
 }
