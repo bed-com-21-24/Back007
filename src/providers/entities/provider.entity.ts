@@ -6,8 +6,10 @@ import {
   JoinColumn,
   OneToOne,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { ProviderReview } from './provider-review.entity';
 
 @Entity('providers')
 export class Provider {
@@ -20,6 +22,9 @@ export class Provider {
   @OneToOne(() => User, (user) => user.provider, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
   user!: User;
+
+  @OneToMany(() => ProviderReview, (review) => review.provider)
+  reviews!: ProviderReview[];
 
   @Column({ type: 'varchar', length: 150 })
   providerName!: string;
