@@ -1,4 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+feature/providers-discovery
 import { Type } from 'class-transformer';
 import {
   IsEnum,
@@ -38,10 +39,33 @@ export class SearchProvidersDto {
   tradeCategory?: string;
 
   @ApiPropertyOptional({ example: 'Zomba' })
+=======
+import { IsOptional, IsString, MaxLength } from 'class-validator';
+
+export class SearchProvidersDto {
+  @ApiPropertyOptional({
+    description: 'Search provider names, bios, and listed skills',
+    example: 'plumber',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  keyword?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by a listed skill or product/service keyword',
+    example: 'pipe repair',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  skill?: string;
+
+  @ApiPropertyOptional({ example: 'Blantyre'
   @IsOptional()
   @IsString()
   @MaxLength(150)
-  location?: string;
+  location?: string; feature/providers-discovery
 
   @ApiPropertyOptional({ example: 2, minimum: 0 })
   @IsOptional()
@@ -109,3 +133,4 @@ export class SearchProvidersDto {
   @Max(50)
   limit?: number;
 }
+======

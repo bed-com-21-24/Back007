@@ -7,20 +7,25 @@ import {
   JoinColumn,
   OneToOne,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { ProviderReview } from './provider-review.entity';
 
 @Entity('providers')
 export class Provider {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'integer', unique: true })
-  userId!: number;
+  @Column({ type: 'integer', unique: true, nullable: true })
+  userId!: number | null;
 
   @OneToOne(() => User, (user) => user.provider, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
-  user!: User;
+  user!: User | null;
+
+  @OneToMany(() => ProviderReview, (review) => review.provider)
+  reviews!: ProviderReview[];
 
   @Column({ type: 'varchar', length: 150 })
   providerName!: string;
