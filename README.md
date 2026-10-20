@@ -109,3 +109,6 @@ NFR-18	The system shall restrict access to personal data to authorized roles onl
 4. Revision History
 Version	Date	Description
 0.1	26 Sept 2026	Initial version — functional and non-functional requirements drafted for 1st Presentation.
+
+
+### Provider Discovery Module implemented by bsc-com-12-24
