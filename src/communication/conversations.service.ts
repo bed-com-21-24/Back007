@@ -29,6 +29,9 @@ export class ConversationsService {
     }
 
     const providerUserId = provider.userId;
+    if (providerUserId === null) {
+      throw new NotFoundException('Provider not found');
+    }
     if (providerUserId === residentId)
       throw new BadRequestException('You cannot contact yourself');
     await this.blocks.assertNotBlocked(residentId, providerUserId);

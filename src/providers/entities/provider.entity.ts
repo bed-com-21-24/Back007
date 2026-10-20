@@ -16,12 +16,12 @@ export class Provider {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'integer', unique: true })
-  userId!: number;
+  @Column({ type: 'integer', unique: true, nullable: true })
+  userId!: number | null;
 
   @OneToOne(() => User, (user) => user.provider, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
-  user!: User;
+  user!: User | null;
 
   @OneToMany(() => ProviderReview, (review) => review.provider)
   reviews!: ProviderReview[];
