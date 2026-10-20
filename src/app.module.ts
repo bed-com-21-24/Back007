@@ -27,9 +27,7 @@ import { ConvertUserAndProviderIdsToIntegers1760830000000 } from './database/mig
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE || 'back007_db',
       autoLoadEntities: true,
-      migrations: [ConvertUserAndProviderIdsToIntegers1760830000000],
-      migrationsRun: true,
-      synchronize: true,
+      synchronize: false,
     }),
 
     AuthModule,
