@@ -1,7 +1,7 @@
-
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'node:path';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -11,7 +11,6 @@ import { CommunicationModule } from './communication/communication.module';
 import { ProvidersModule } from './providers/providers.module';
 import { SafetyModule } from './safety/safety.module';
 import { UsersModule } from './users/users.module';
-import { ConvertUserAndProviderIdsToIntegers1760830000000 } from './database/migrations/1760830000000-ConvertUserAndProviderIdsToIntegers';
 
 @Module({
   imports: [
@@ -23,11 +22,19 @@ import { ConvertUserAndProviderIdsToIntegers1760830000000 } from './database/mig
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
       port: Number(process.env.DB_PORT || 5432),
-      username: process.env.DB_USERNAME || 'postgres',
+      username: process.env.DB_USERNAME || 'clinton',
       password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE || 'back007_db',
+      database: process.env.DB_DATABASE || 'skills_directory',
       autoLoadEntities: true,
-      synchronize: false,
+ feature/providers-discovery
+      synchronize: true,
+=======
+      synchronize: process.env.NODE_ENV !== 'production',
+      migrations: [
+        join(__dirname, 'database', 'migrations', '*.ts'),
+        join(__dirname, 'database', 'migrations', '*.js'),
+      ],
+      migrationsRun: process.env.NODE_ENV === 'productio
     }),
 
     AuthModule,

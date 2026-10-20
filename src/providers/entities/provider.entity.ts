@@ -3,23 +3,29 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Index,
   JoinColumn,
   OneToOne,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { ProviderReview } from './provider-review.entity';
 
 @Entity('providers')
 export class Provider {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'integer', unique: true })
-  userId!: number;
+  @Column({ type: 'integer', unique: true, nullable: true })
+  userId!: number | null;
 
   @OneToOne(() => User, (user) => user.provider, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
-  user!: User;
+  user!: User | null;
+
+  @OneToMany(() => ProviderReview, (review) => review.provider)
+  reviews!: ProviderReview[];
 
   @Column({ type: 'varchar', length: 150 })
   providerName!: string;
@@ -37,6 +43,36 @@ export class Provider {
   })
   skills!: string[];
 
+  @Index()
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  tradeCategory!: string | null;
+
+  @Column({ type: 'integer', default: 0 })
+  yearsOfExperience!: number;
+
+  @Column({ type: 'double precision', nullable: true })
+  latitude!: number | null;
+
+  @Column({ type: 'double precision', nullable: true })
+  longitude!: number | null;
+
+  @Column({
+    type: 'numeric',
+    precision: 3,
+    scale: 2,
+    default: 0,
+    transformer: {
+      to: (value?: number | null) => value,
+      from: (value?: string | null) =>
+        value === null || value === undefined ? 0 : parseFloat(value),
+    },
+  })
+  averageRating!: number;
+
+  @Column({ type: 'integer', default: 0 })
+  reviewCount!: number;
+
+  @Index()
   @Column({ type: 'varchar', length: 20, default: 'pending' })
   status!: string;
 
