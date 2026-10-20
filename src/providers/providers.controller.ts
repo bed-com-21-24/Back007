@@ -45,11 +45,9 @@ export class ProvidersController {
 
   private getUserId(req: AuthenticatedRequest): number {
     const userId = req.user?.id ?? req.user?.sub;
-
     if (!userId) {
       throw new UnauthorizedException('Authenticated user ID not found');
     }
-
     return userId;
   }
 
@@ -98,7 +96,11 @@ export class ProvidersController {
 
   @Post()
   @ApiOperation({ summary: 'Create the current user provider listing' })
-  @ApiResponse({ status: 201, description: 'Provider listing created' })
+  @ApiResponse({ status: 201, description: 'Provider listing created'
+  create(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateProviderDto,
+  )
   create(@Req() req: AuthenticatedRequest, @Body() dto: CreateProviderDto) {
     return this.providersService.create(this.getUserId(req), dto);
   }
@@ -107,7 +109,7 @@ export class ProvidersController {
   @ApiOperation({ summary: 'Get the current user provider listing' })
   @ApiResponse({ status: 200, description: 'Provider listing returned' })
   findMe(@Req() req: AuthenticatedRequest) {
-    return this.providersService.findMe(this.getUserId(req));
+    return this.providersService.findMe(this.getUserId(req))
   }
 
   @Get(':id')
@@ -120,7 +122,13 @@ export class ProvidersController {
   @Patch('me')
   @ApiOperation({ summary: 'Update the current user provider listing' })
   @ApiResponse({ status: 200, description: 'Provider listing updated' })
+
+  updateMe(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdateProviderDto,
+  )
   updateMe(@Req() req: AuthenticatedRequest, @Body() dto: UpdateProviderDto) {
+
     return this.providersService.updateMe(this.getUserId(req), dto);
   }
 

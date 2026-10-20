@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -23,16 +22,19 @@ import { UsersModule } from './users/users.module';
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
       port: Number(process.env.DB_PORT || 5432),
-      username: process.env.DB_USERNAME || 'postgres',
+      username: process.env.DB_USERNAME || 'clinton',
       password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE || 'back007_db',
+      database: process.env.DB_DATABASE || 'skills_directory',
       autoLoadEntities: true,
+ feature/providers-discovery
+      synchronize: true,
+=======
       synchronize: process.env.NODE_ENV !== 'production',
       migrations: [
         join(__dirname, 'database', 'migrations', '*.ts'),
         join(__dirname, 'database', 'migrations', '*.js'),
       ],
-      migrationsRun: process.env.NODE_ENV === 'production',
+      migrationsRun: process.env.NODE_ENV === 'productio
     }),
 
     AuthModule,
