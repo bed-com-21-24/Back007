@@ -6,9 +6,11 @@ import {
   Index,
   JoinColumn,
   OneToOne,
+  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Review } from './review.entity';
 
 @Entity('providers')
 export class Provider {
@@ -73,6 +75,9 @@ export class Provider {
 
   @Column({ type: 'varchar', length: 500, nullable: true })
   rejectionReason!: string | null;
+
+  @OneToMany(() => Review, (review) => review.provider)
+  reviews!: Review[];
 
   @CreateDateColumn()
   createdAt!: Date;
