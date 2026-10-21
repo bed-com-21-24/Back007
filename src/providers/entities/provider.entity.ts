@@ -6,26 +6,23 @@ import {
   Index,
   JoinColumn,
   OneToOne,
-  UpdateDateColumn,
   OneToMany,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { ProviderReview } from './provider-review.entity';
+import { Review } from './review.entity';
 
 @Entity('providers')
 export class Provider {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'integer', unique: true, nullable: true })
-  userId!: number | null;
+  @Column({ type: 'integer', unique: true })
+  userId!: number;
 
   @OneToOne(() => User, (user) => user.provider, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
-  user!: User | null;
-
-  @OneToMany(() => ProviderReview, (review) => review.provider)
-  reviews!: ProviderReview[];
+  user!: User;
 
   @Column({ type: 'varchar', length: 150 })
   providerName!: string;
@@ -78,6 +75,9 @@ export class Provider {
 
   @Column({ type: 'varchar', length: 500, nullable: true })
   rejectionReason!: string | null;
+
+  @OneToMany(() => Review, (review) => review.provider)
+  reviews!: Review[];
 
   @CreateDateColumn()
   createdAt!: Date;
