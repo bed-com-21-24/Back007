@@ -30,6 +30,7 @@ export class ProvidersService {
     const provider = this.providerRepository.create({
       userId,
       providerName: dto.providerName,
+      phoneNumber: dto.phoneNumber ?? null,
       bio: dto.bio ?? null,
       location: dto.location ?? null,
       tradeCategory: dto.tradeCategory ?? null,
