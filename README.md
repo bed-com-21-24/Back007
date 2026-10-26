@@ -105,4 +105,11 @@ NFR-16	The system shall enforce data validation rules to maintain consistency an
 3.8 Compliance & Privacy
 ID	Requirement Description	Priority
 NFR-17	The system shall only collect user data necessary for platform functionality and shall obtain user consent where required.	Medium
+NFR-18	The system shall restrict access to personal data to authorized roles only, consistent with the access control policy defined in FR-21.	High
+4. Revision History
+Version	Date	Description
+0.1	26 Sept 2026	Initial version — functional and non-functional requirements drafted for 1st Presentation.
+
+### Provider Discovery Module implemented by bsc-com-12-24
+
 NFR-18	The system shall restrict access to personal data to authorized roles only, consistent with the access control 
