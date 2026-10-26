@@ -30,6 +30,9 @@ export class Provider {
   @Column({ type: 'varchar', length: 150 })
   providerName!: string;
 
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  phoneNumber!: string | null;
+
   @Column({ type: 'text', nullable: true })
   bio!: string | null;
 

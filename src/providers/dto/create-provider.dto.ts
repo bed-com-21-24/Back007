@@ -18,6 +18,12 @@ export class CreateProviderDto {
   @MaxLength(150)
   providerName!: string;
 
+  @ApiPropertyOptional({ example: '+265 995 808322', maxLength: 30 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  phoneNumber?: string;
+
   @ApiPropertyOptional({
     example: 'Licensed cellphone repairer with 5 years of experience.',
     maxLength: 2000,
@@ -50,14 +56,13 @@ export class CreateProviderDto {
   @Max(80)
   yearsOfExperience?: number;
 
-  @ApiPropertyOptional({ example: -13.9626, minimum: -90, maximum: 90 })
+  
   @IsOptional()
   @IsNumber()
   @Min(-90)
   @Max(90)
   latitude?: number;
 
-  @ApiPropertyOptional({ example: 33.7741, minimum: -180, maximum: 180 })
   @IsOptional()
   @IsNumber()
   @Min(-180)

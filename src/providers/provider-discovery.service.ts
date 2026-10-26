@@ -29,6 +29,7 @@ END)`;
 export interface PublicProvider {
   id: number;
   providerName: string;
+  phoneNumber: string | null;
   bio: string | null;
   tradeCategory: string | null;
   location: string | null;
@@ -264,6 +265,7 @@ function toPublicProvider(
   return {
     id: provider.id,
     providerName: provider.providerName,
+    phoneNumber: provider.phoneNumber,
     bio: provider.bio,
     tradeCategory: provider.tradeCategory,
     location: provider.location,
