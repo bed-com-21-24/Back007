@@ -1,6 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Provider } from '../../providers/entities/provider.entity';
 
-@Entity()
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -13,4 +19,13 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({ default: 'resident' })
+  role: string;
+
+  @Column({ default: 'active' })
+  status: string;
+
+  @OneToOne(() => Provider, (provider) => provider.user)
+  provider?: Provider;
 }

@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello Beston, you good there?!';
+  getHello(name?: string): string {
+    const userName = name?.trim();
+    return userName
+      ? `Hello, ${userName}! Welcome to Skillz Directory.`
+      : 'Welcome to Skillz Directory takulandilani!.';
   }
 }

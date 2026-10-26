@@ -1,5 +1,20 @@
 # Back007
 Community Skills & Services Directory ("Skillz Directory") — Backend
+
+## Local setup
+
+Create a `.env` file in the project root (you can copy `.env.example`) and configure the database values. Set `JWT_SECRET` to a cryptographically random value of at least 32 bytes; the application requires it to sign and validate authentication tokens and will fail during startup if it is missing.
+
+Generate a secret with Node.js:
+
+```sh
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+Add the generated value to `.env` as `JWT_SECRET=...`. Do not commit `.env` or use a shared/predictable secret outside local development.
+
+In non-production environments, TypeORM synchronizes the registered entities with PostgreSQL at startup, creating missing tables such as `users`. In production (`NODE_ENV=production`), synchronization is disabled; apply database schema changes through a migration or another controlled deployment process.
+
 Course	Software Engineering (COM311)
 Project Title	Group Mini-Project — Community Skills & Services Directory
 Group Number	FF7
@@ -94,3 +109,7 @@ NFR-18	The system shall restrict access to personal data to authorized roles onl
 4. Revision History
 Version	Date	Description
 0.1	26 Sept 2026	Initial version — functional and non-functional requirements drafted for 1st Presentation.
+
+### Provider Discovery Module implemented by bsc-com-12-24
+
+NFR-18	The system shall restrict access to personal data to authorized roles only, consistent with the access control 
