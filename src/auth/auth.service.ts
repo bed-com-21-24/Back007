@@ -6,6 +6,7 @@ import {
   OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -97,11 +98,97 @@ export class AuthService implements OnModuleInit {
       access_token: this.jwtService.sign({ sub: user.id, email: user.email }),
     };
   }
-  async logout() {
-    return {
-      message: 'Logout successful',
-    };
+
+  async refreshTokens(refreshToken: string) {
+  let payload: { sub: number; email: string; tokenType: string };
+
+  try {
+    payload = this.jwtService.verify(refreshToken, {
+      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+    });
+  } catch {
+    throw new UnauthorizedException('Invalid or expired refresh token');
   }
+
+  if (
+    !Number.isSafeInteger(payload.sub) ||
+    payload.sub < 1 ||
+    payload.tokenType !== 'refresh'
+  ) {
+    throw new UnauthorizedException('Invalid refresh token');
+  }
+
+  const user = await this.userRepository.findOne({
+    where: { id: payload.sub },
+  });
+
+  if (!user || !user.refreshTokenHash) {
+    throw new UnauthorizedException('Refresh token has been revoked');
+  }
+
+  const submittedHash = createHash('sha256')
+    .update(refreshToken)
+    .digest('hex');
+
+  if (submittedHash !== user.refreshTokenHash) {
+    throw new UnauthorizedException('Refresh token does not match');
+  }
+
+  // Generate a new pair of tokens.
+  const newAccessToken = this.jwtService.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      tokenType: 'access',
+    },
+    {
+      secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+      expiresIn: '10m',
+    },
+  );
+
+  const newRefreshToken = this.jwtService.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      tokenType: 'refresh',
+    },
+    {
+      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      expiresIn: '15m',
+    },
+  );
+
+  // Store the hash of the new refresh token.
+  user.refreshTokenHash = createHash('sha256')
+    .update(newRefreshToken)
+    .digest('hex');
+
+  await this.userRepository.save(user);
+
+  return {
+    access_token: newAccessToken,
+    refresh_token: newRefreshToken,
+    expires_in: 600,
+    refresh_expires_in: 900,
+  };
+}
+ async logout(userId: number) {
+  const user = await this.userRepository.findOne({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new NotFoundException('User not found');
+  }
+
+  user.refreshTokenHash = null;
+  await this.userRepository.save(user);
+
+  return {
+    message: 'Logout successful',
+  };
+}
 
   async forgotPassword(_forgotPasswordDto: ForgotPasswordDto) {
     return {
@@ -123,6 +210,7 @@ export class AuthService implements OnModuleInit {
     }
 
     user.password = await bcrypt.hash(resetPasswordDto.newPassword, 10);
+    user.refreshTokenHash = null;
     await this.userRepository.save(user);
 
     return {
@@ -148,6 +236,7 @@ export class AuthService implements OnModuleInit {
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
+    user.refreshTokenHash = null;
     await this.userRepository.save(user);
 
     return { message: 'Password changed successfully' };

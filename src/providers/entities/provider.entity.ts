@@ -17,15 +17,21 @@ export class Provider {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'integer', unique: true })
-  userId!: number;
+  @Column({ type: 'integer', unique: true, nullable: true })
+  userId!: number | null;
 
-  @OneToOne(() => User, (user) => user.provider, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.provider, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
   @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
   user!: User;
 
   @Column({ type: 'varchar', length: 150 })
   providerName!: string;
+
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  phoneNumber!: string | null;
 
   @Column({ type: 'text', nullable: true })
   bio!: string | null;
