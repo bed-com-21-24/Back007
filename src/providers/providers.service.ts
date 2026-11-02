@@ -54,10 +54,20 @@ export class ProvidersService {
     return provider;
   }
 
-  async updateMe(userId: number, dto: UpdateProviderDto) {
+    async updateMe(userId: number, dto: UpdateProviderDto) {
     const provider = await this.findMe(userId);
+    
+    // 1. Apply the new data (this sets categoryId to 3)
     Object.assign(provider, dto);
-    return this.providerRepository.save(provider);
+
+    // 2. Clear the old category object from memory so TypeORM doesn't get confused
+    delete (provider as any).category;
+
+    // 3. Save the updated provider
+    await this.providerRepository.save(provider);
+
+    // 4. Fetch the provider fresh from the database so the new Category object is included
+    return this.findMe(userId);
   }
 
   async updateSkills(userId: number, dto: UpdateProviderSkillsDto) {
