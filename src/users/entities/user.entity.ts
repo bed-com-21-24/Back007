@@ -28,4 +28,7 @@ export class User {
 
   @OneToOne(() => Provider, (provider) => provider.user)
   provider?: Provider;
+
+  @Column({ type: 'text', nullable: true })
+refreshTokenHash: string | null;
 }

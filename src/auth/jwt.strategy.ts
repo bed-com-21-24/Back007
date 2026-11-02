@@ -13,9 +13,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: { sub: number; email: string }) {
-    if (!Number.isSafeInteger(payload.sub) || payload.sub < 1) {
-      throw new UnauthorizedException('Invalid user ID in access token');
+  validate(payload: { sub: number; email: string; tokenType:String }) {
+    if (
+      !Number.isSafeInteger(payload.sub) ||
+       payload.sub < 1 || 
+       payload.tokenType !== 'access') {
+      throw new UnauthorizedException('Invalid user access token');
     }
 
     return { id: payload.sub, email: payload.email };
