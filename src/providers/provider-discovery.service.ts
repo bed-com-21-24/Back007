@@ -160,13 +160,14 @@ export class ProviderDiscoveryService {
     return toPublicProvider(provider, null);
   }
 
-  private visibleProviders(): SelectQueryBuilder<Provider> {
+    private visibleProviders(): SelectQueryBuilder<Provider> {
     return this.providerRepository
       .createQueryBuilder('p')
+      .leftJoinAndSelect('p.category', 'category') // <-- ADD THIS LINE
       .innerJoin('p.user', 'u')
       .where('p.status = :approved', { approved: 'approved' })
       .andWhere('u.status = :active', { active: 'active' });
-  }
+  } 
 
   private applyKeywords(
     qb: SelectQueryBuilder<Provider>,
@@ -181,15 +182,15 @@ export class ProviderDiscoveryService {
     words.forEach((word, index) => {
       const param = `kw${index}`;
       qb.andWhere(
-        new Brackets((group) => {
+                new Brackets((group) => {
           group
             .where(`p.providerName ILIKE :${param}`)
             .orWhere(`p.bio ILIKE :${param}`)
-            .orWhere(`p.tradeCategory ILIKE :${param}`)
+            .orWhere(`category.name ILIKE :${param}`) // <-- ADD THIS
             .orWhere(
               `EXISTS (SELECT 1 FROM unnest(p.skills) AS skill WHERE skill ILIKE :${param})`,
             );
-        }),
+        }),                         
         { [param]: `%${escapeLike(word)}%` },
       );
     });
