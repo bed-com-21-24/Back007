@@ -46,6 +46,14 @@ export class ProvidersController {
     return this.discoveryService.search(query);
   }
 
+    @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get the current user provider listing' })
+  findMe(@Req() req: AuthenticatedRequest) {
+    return this.providersService.findMe(this.getUserId(req));
+  }
+  
   @Get(':id')
   @ApiOperation({ summary: 'Get the public profile of one provider' })
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -59,14 +67,6 @@ export class ProvidersController {
   @ApiOperation({ summary: 'Create the current user provider listing' })
   create(@Req() req: AuthenticatedRequest, @Body() dto: CreateProviderDto) {
     return this.providersService.create(this.getUserId(req), dto);
-  }
-
-  @Get('me')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get the current user provider listing' })
-  findMe(@Req() req: AuthenticatedRequest) {
-    return this.providersService.findMe(this.getUserId(req));
   }
 
   @Patch('me')
