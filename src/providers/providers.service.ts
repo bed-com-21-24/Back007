@@ -18,7 +18,7 @@ export class ProvidersService {
     private readonly providerRepository: Repository<Provider>,
   ) {}
 
-  async create(userId: number, dto: CreateProviderDto) {
+    async create(userId: number, dto: CreateProviderDto) {
     const existing = await this.providerRepository.findOne({
       where: { userId },
     });
@@ -30,10 +30,9 @@ export class ProvidersService {
     const provider = this.providerRepository.create({
       userId,
       providerName: dto.providerName,
-      phoneNumber: dto.phoneNumber ?? null,
       bio: dto.bio ?? null,
       location: dto.location ?? null,
-      tradeCategory: dto.tradeCategory ?? null,
+      categoryId: dto.categoryId ?? null,
       yearsOfExperience: dto.yearsOfExperience ?? 0,
       latitude: dto.latitude ?? null,
       longitude: dto.longitude ?? null,

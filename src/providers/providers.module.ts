@@ -6,7 +6,6 @@ import { Review } from './entities/review.entity';
 import { Category } from './entities/category.entity';
 import { ProvidersController } from './providers.controller';
 import { ProvidersService } from './providers.service';
-import { ProviderDiscoveryController } from './provider-discovery.controller';
 import { ProviderDiscoveryService } from './provider-discovery.service';
 import { ReviewsController } from './reviews.controller';
 import { ReviewsService } from './reviews.service';
@@ -17,7 +16,6 @@ import { CategoriesService } from './categories.service';
   imports: [TypeOrmModule.forFeature([Provider, Review, Category])],
   controllers: [
     ProvidersController,
-    ProviderDiscoveryController,
     ReviewsController,
     CategoriesController,
   ],
