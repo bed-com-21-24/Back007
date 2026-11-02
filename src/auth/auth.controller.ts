@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -48,12 +49,14 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Post('logout')
-  @ApiOperation({ summary: 'Log out the current session' })
-  @ApiResponse({ status: 201, description: 'Logged out successfully' })
-  logout() {
-    return this.authService.logout();
-  }
+  @UseGuards(JwtAuthGuard)
+@Post('logout')
+@ApiBearerAuth()
+@ApiOperation({ summary: 'Log out the current user' })
+@ApiResponse({ status: 200, description: 'Logout successful' })
+logout(@Req() req: { user: { id: number } }) {
+  return this.authService.logout(req.user.id);
+}
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'Get password recovery availability instructions' })
@@ -64,6 +67,12 @@ export class AuthController {
   forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.authService.forgotPassword(forgotPasswordDto);
   }
+  @Post('refresh')
+@ApiOperation({ summary: 'Refresh access and refresh tokens' })
+@ApiResponse({ status: 201, description: 'Tokens refreshed successfully' })
+refresh(@Body() dto: RefreshTokenDto) {
+  return this.authService.refreshTokens(dto.refreshToken);
+}
 
   @Post('reset-password')
   @UseGuards(JwtAuthGuard)
