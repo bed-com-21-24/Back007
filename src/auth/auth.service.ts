@@ -87,17 +87,56 @@ export class AuthService implements OnModuleInit {
     return { id: user.id, name: user.name, email: user.email };
   }
 
-  async login(loginDto: LoginDto) {
-    const user = await this.userRepository.findOne({
-      where: { email: loginDto.email },
-    });
-    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-    return {
-      access_token: this.jwtService.sign({ sub: user.id, email: user.email }),
-    };
+ async login(loginDto: LoginDto) {
+  const user = await this.userRepository.findOne({
+    where: { email: loginDto.email },
+  });
+
+  if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+    throw new UnauthorizedException('Invalid email or password');
   }
+
+  // Generate access token (10 minutes)
+  const accessToken = this.jwtService.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      tokenType: 'access',
+    },
+    {
+      secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+      expiresIn: '10m',
+    },
+  );
+
+  // Generate refresh token (15 minutes)
+  const refreshToken = this.jwtService.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      tokenType: 'refresh',
+    },
+    {
+      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      expiresIn: '15m',
+    },
+  );
+
+  // Hash and store refresh token
+  const refreshTokenHash = createHash('sha256')
+    .update(refreshToken)
+    .digest('hex');
+
+  user.refreshTokenHash = refreshTokenHash;
+  await this.userRepository.save(user);
+
+  return {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    expires_in: 600,
+    refresh_expires_in: 900,
+  };
+}
 
   async refreshTokens(refreshToken: string) {
   let payload: { sub: number; email: string; tokenType: string };
