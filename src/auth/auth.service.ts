@@ -87,20 +87,14 @@ export class AuthService implements OnModuleInit {
     return { id: user.id, name: user.name, email: user.email };
   }
 
-  async login(loginDto: LoginDto) {
-    const user = await this.userRepository.findOne({
-      where: { email: loginDto.email },
-    });
-    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-    return {
-      access_token: this.jwtService.sign({
-        sub: user.id,
-        email: user.email,
-        tokenType: 'access',
-      }),
-    };
+ 
+async login(loginDto: LoginDto) {
+  const user = await this.userRepository.findOne({
+    where: { email: loginDto.email },
+  });
+
+  if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+    throw new UnauthorizedException('Invalid email or password');
   }
 
   // Generate access token (10 minutes)
@@ -144,6 +138,7 @@ export class AuthService implements OnModuleInit {
     refresh_expires_in: 900,
   };
 }
+
 
   async refreshTokens(refreshToken: string) {
   let payload: { sub: number; email: string; tokenType: string };
@@ -216,7 +211,7 @@ export class AuthService implements OnModuleInit {
     access_token: newAccessToken,
     refresh_token: newRefreshToken,
     expires_in: 600,
-    refresh_expires_in: 900,
+    refresh_expires_in: 12000,
   };
 }
  async logout(userId: number) {

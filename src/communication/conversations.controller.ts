@@ -14,7 +14,7 @@ import {
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // adjust
 import { ChatGateway } from './chat.gateway';
 import { ConversationsService } from './conversations.service';
-import { ContactProviderDto } from './dto/contact-provider.dto';
+import { StartConversationDto } from './dto/start-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import {
   ApiBearerAuth,
@@ -35,27 +35,16 @@ export class ConversationsController {
     private gateway: ChatGateway,
   ) {}
 
-  @Post('providers/:id/contact')
-  @ApiOperation({ summary: 'Contact a provider and start a conversation' })
-  @ApiParam({
-    name: 'id',
-    description: 'Numeric ID of the provider',
-    type: Number,
-  })
-  @ApiResponse({ status: 201, description: 'Message sent to provider' })
-  async contact(
-    @Req() req: any,
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: ContactProviderDto,
-  ) {
-    const { message, participantIds } = await this.service.contactProvider(
-      req.user.id,
-      id,
-      dto.message,
-    );
-    this.gateway.pushMessage(message, participantIds);
-    return message;
-  }
+ @Post('conversations')
+async start(@Req() req: any, @Body() dto: StartConversationDto) {
+  const { message, participantIds } = await this.service.contactProvider(
+    req.user.id,
+    dto.providerId,
+    dto.message,
+  );
+  this.gateway.pushMessage(message, participantIds);
+  return message;
+}
 
   @Get('conversations')
   @ApiOperation({ summary: 'List the current user conversations' })
