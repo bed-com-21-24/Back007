@@ -31,11 +31,11 @@ export class SearchProvidersDto {
   @MaxLength(100)
   q?: string;
 
-  @ApiPropertyOptional({ example: 'Electrician' })
+  @ApiPropertyOptional({ example: 1, description: 'Filter by Category ID' })
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  tradeCategory?: string;
+  @Type(() => Number)
+  @IsInt()
+  categoryId?: number;
 
   @ApiPropertyOptional({ example: 'Zomba' })
   @IsOptional()

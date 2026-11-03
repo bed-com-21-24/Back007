@@ -29,9 +29,8 @@ END)`;
 export interface PublicProvider {
   id: number;
   providerName: string;
-  phoneNumber: string | null;
   bio: string | null;
-  tradeCategory: string | null;
+  category: string | null; // <-- ADD THIS LINE
   location: string | null;
   skills: string[];
   yearsOfExperience: number;
@@ -81,10 +80,9 @@ export class ProviderDiscoveryService {
 
     this.applyKeywords(qb, query.q);
 
-    const category = query.tradeCategory?.trim();
-    if (category) {
-      qb.andWhere('LOWER(p.tradeCategory) = LOWER(:category)', { category });
-    }
+    if (query.categoryId !== undefined) {
+  qb.andWhere('p.categoryId = :categoryId', { categoryId: query.categoryId });
+}
 
     const location = query.location?.trim();
     if (location) {
@@ -162,28 +160,14 @@ export class ProviderDiscoveryService {
     return toPublicProvider(provider, null);
   }
 
-  async listCategories(): Promise<{ category: string; count: number }[]> {
-    const rows = await this.visibleProviders()
-      .select('MIN(p.tradeCategory)', 'category')
-      .addSelect('COUNT(*)', 'count')
-      .andWhere('p.tradeCategory IS NOT NULL')
-      .groupBy('LOWER(p.tradeCategory)')
-      .orderBy('MIN(p.tradeCategory)', 'ASC')
-      .getRawMany<{ category: string; count: string }>();
-
-    return rows.map((row) => ({
-      category: row.category,
-      count: Number(row.count),
-    }));
-  }
-
-  private visibleProviders(): SelectQueryBuilder<Provider> {
+    private visibleProviders(): SelectQueryBuilder<Provider> {
     return this.providerRepository
       .createQueryBuilder('p')
+      .leftJoinAndSelect('p.category', 'category') // <-- ADD THIS LINE
       .innerJoin('p.user', 'u')
       .where('p.status = :approved', { approved: 'approved' })
       .andWhere('u.status = :active', { active: 'active' });
-  }
+  } 
 
   private applyKeywords(
     qb: SelectQueryBuilder<Provider>,
@@ -198,15 +182,15 @@ export class ProviderDiscoveryService {
     words.forEach((word, index) => {
       const param = `kw${index}`;
       qb.andWhere(
-        new Brackets((group) => {
+                new Brackets((group) => {
           group
             .where(`p.providerName ILIKE :${param}`)
             .orWhere(`p.bio ILIKE :${param}`)
-            .orWhere(`p.tradeCategory ILIKE :${param}`)
+            .orWhere(`category.name ILIKE :${param}`) // <-- ADD THIS
             .orWhere(
               `EXISTS (SELECT 1 FROM unnest(p.skills) AS skill WHERE skill ILIKE :${param})`,
             );
-        }),
+        }),                         
         { [param]: `%${escapeLike(word)}%` },
       );
     });
@@ -254,10 +238,6 @@ export class ProviderDiscoveryService {
   }
 }
 
-function escapeLike(value: string): string {
-  return value.replace(/[\\%_]/g, '\\$&');
-}
-
 function toPublicProvider(
   provider: Provider,
   distanceKm: number | null,
@@ -265,9 +245,8 @@ function toPublicProvider(
   return {
     id: provider.id,
     providerName: provider.providerName,
-    phoneNumber: provider.phoneNumber,
     bio: provider.bio,
-    tradeCategory: provider.tradeCategory,
+    category: provider.category ? provider.category.name : null,
     location: provider.location,
     skills: provider.skills,
     yearsOfExperience: provider.yearsOfExperience,
@@ -276,4 +255,8 @@ function toPublicProvider(
     distanceKm: distanceKm === null ? null : Math.round(distanceKm * 10) / 10,
     createdAt: provider.createdAt,
   };
+}
+
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, '\\$&');
 }

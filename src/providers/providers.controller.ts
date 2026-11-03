@@ -8,77 +8,80 @@ import {
   Req,
   UseGuards,
   UnauthorizedException,
+  Query,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ProvidersService } from './providers.service';
+import { ProviderDiscoveryService } from './provider-discovery.service';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
 import { UpdateProviderSkillsDto } from './dto/update-provider-skills.dto';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { SearchProvidersDto } from './dto/search-providers.dto';
 
-type AuthenticatedRequest = Request & {
-  user?: {
-    id?: number;
-    sub?: number;
-  };
-};
+type AuthenticatedRequest = Request & { user?: { id?: number; sub?: number } };
 
 @Controller('providers')
-@UseGuards(AuthGuard('jwt'))
 @ApiTags('providers')
-@ApiBearerAuth()
 export class ProvidersController {
-  constructor(private readonly providersService: ProvidersService) {}
+  constructor(
+    private readonly providersService: ProvidersService,
+    private readonly discoveryService: ProviderDiscoveryService,
+  ) {}
 
   private getUserId(req: AuthenticatedRequest): number {
     const userId = req.user?.id ?? req.user?.sub;
-    if (!userId) {
-      throw new UnauthorizedException('Authenticated user ID not found');
-    }
+    if (!userId) throw new UnauthorizedException('Authenticated user ID not found');
     return userId;
   }
 
+  // PUBLIC DISCOVERY
+  @Get()
+  @ApiOperation({ summary: 'Search, filter and sort approved service providers' })
+  search(@Query() query: SearchProvidersDto) {
+    return this.discoveryService.search(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get the public profile of one provider' })
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.discoveryService.findOne(id);
+  }
+
+  // AUTHENTICATED ROUTES
   @Post()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create the current user provider listing' })
-  @ApiResponse({ status: 201, description: 'Provider listing created' })
-  create(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: CreateProviderDto,
-  ) {
+  create(@Req() req: AuthenticatedRequest, @Body() dto: CreateProviderDto) {
     return this.providersService.create(this.getUserId(req), dto);
   }
 
   @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get the current user provider listing' })
-  @ApiResponse({ status: 200, description: 'Provider listing returned' })
   findMe(@Req() req: AuthenticatedRequest) {
     return this.providersService.findMe(this.getUserId(req));
   }
 
   @Patch('me')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update the current user provider listing' })
-  @ApiResponse({ status: 200, description: 'Provider listing updated' })
-  updateMe(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: UpdateProviderDto,
-  ) {
+  updateMe(@Req() req: AuthenticatedRequest, @Body() dto: UpdateProviderDto) {
     return this.providersService.updateMe(this.getUserId(req), dto);
   }
 
   @Put('me/skills')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Replace the current provider skills' })
-  @ApiResponse({ status: 200, description: 'Provider skills updated' })
-  updateSkills(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: UpdateProviderSkillsDto,
-  ) {
+  updateSkills(@Req() req: AuthenticatedRequest, @Body() dto: UpdateProviderSkillsDto) {
     return this.providersService.updateSkills(this.getUserId(req), dto);
   }
 }

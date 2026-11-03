@@ -1,14 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsInt,
-  IsNumber,
-  Min,
-  Max,
-  MaxLength,
-} from 'class-validator';
-import { Transform } from 'class-transformer';
+import { IsString, IsNotEmpty, IsOptional, IsInt, IsNumber, Min, Max, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateProviderDto {
@@ -18,16 +8,7 @@ export class CreateProviderDto {
   @MaxLength(150)
   providerName!: string;
 
-  @ApiPropertyOptional({ example: '+265 995 808322', maxLength: 30 })
-  @IsOptional()
-  @IsString()
-  @MaxLength(30)
-  phoneNumber?: string;
-
-  @ApiPropertyOptional({
-    example: 'Licensed cellphone repairer with 5 years of experience.',
-    maxLength: 2000,
-  })
+  @ApiPropertyOptional({ example: 'Licensed plumber...', maxLength: 2000 })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
@@ -39,15 +20,10 @@ export class CreateProviderDto {
   @MaxLength(150)
   location?: string;
 
-  @ApiPropertyOptional({ example: 'Electrician', maxLength: 100 })
+  @ApiPropertyOptional({ example: 1, description: 'Category ID' })
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  tradeCategory?: string;
+  @IsInt()
+  categoryId?: number;
 
   @ApiPropertyOptional({ example: 5, minimum: 0, maximum: 80 })
   @IsOptional()
@@ -56,13 +32,14 @@ export class CreateProviderDto {
   @Max(80)
   yearsOfExperience?: number;
 
-  
+  @ApiPropertyOptional({ example: -13.9626, minimum: -90, maximum: 90 })
   @IsOptional()
   @IsNumber()
   @Min(-90)
   @Max(90)
   latitude?: number;
 
+  @ApiPropertyOptional({ example: 33.7741, minimum: -180, maximum: 180 })
   @IsOptional()
   @IsNumber()
   @Min(-180)
