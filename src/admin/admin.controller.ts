@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Patch,
-  Delete,
   Param,
   Body,
   ParseIntPipe,
@@ -14,8 +13,9 @@ import { AdminService } from './admin.service';
 import { AdminAuthGuard } from './admin-auth.guard';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
-import { RejectProviderDto } from './dto/reject-provider.dto';
-import { UpdateUserDto } from '../users/dto/update-user.dto';
+import { AdminUpdateUserDto } from './dto/admin-update-user.dto';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { ProviderActionDto } from './dto/provider-action.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -32,18 +32,13 @@ import {
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  @Get('dashboard')
-  @ApiOperation({ summary: 'Get administrator dashboard data' })
-  @ApiResponse({ status: 200, description: 'Dashboard data returned' })
-  getDashboard() {
-    return this.adminService.getDashboard();
-  }
-
-  @Get('users')
-  @ApiOperation({ summary: 'List users' })
-  @ApiResponse({ status: 200, description: 'Users returned' })
-  getUsers() {
-    return this.adminService.getUsers();
+  @Get('overview')
+  @ApiOperation({
+    summary: 'Get dashboard, users, platform report, and reported users',
+  })
+  @ApiResponse({ status: 200, description: 'Administrator overview returned' })
+  getOverview() {
+    return this.adminService.getOverview();
   }
 
   @Patch('users/:id')
@@ -52,9 +47,21 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'User profile updated' })
   updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateUserDto,
+    @Body() dto: AdminUpdateUserDto,
   ) {
     return this.adminService.updateUser(id, dto);
+  }
+
+  @Patch('users/:id/status')
+  @ApiOperation({ summary: 'Change a user account status' })
+  @ApiParam({ name: 'id', description: 'Numeric ID of the user', type: Number })
+  @ApiBody({ type: UpdateUserStatusDto })
+  @ApiResponse({ status: 200, description: 'User account status updated' })
+  updateUserStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUserStatusDto,
+  ) {
+    return this.adminService.updateUserStatus(id, dto);
   }
 
   @Post('admins')
@@ -65,47 +72,20 @@ export class AdminController {
     return this.adminService.createAdmin(dto);
   }
 
-  @Patch('users/:id/suspend')
-  @ApiOperation({ summary: 'Suspend a user account' })
-  @ApiParam({ name: 'id', description: 'Numeric ID of the user', type: Number })
-  @ApiResponse({ status: 200, description: 'User account suspended' })
-  suspendUser(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.suspendUser(id);
-  }
-
-  @Patch('users/:id/ban')
-  @ApiOperation({ summary: 'Ban a user account' })
-  @ApiParam({ name: 'id', description: 'Numeric ID of the user', type: Number })
-  @ApiResponse({ status: 200, description: 'User account banned' })
-  banUser(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.banUser(id);
-  }
-
-  @Delete('providers/:id')
-  @ApiOperation({ summary: 'Delete a provider listing' })
-  @ApiParam({ name: 'id', description: 'Numeric ID of the provider profile', type: Number })
-  @ApiResponse({ status: 200, description: 'Provider listing deleted' })
-  deleteProvider(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.deleteProvider(id);
-  }
-
-  @Patch('providers/:id/approve')
-  @ApiOperation({ summary: 'Approve a provider listing' })
-  @ApiParam({ name: 'id', description: 'Numeric ID of the provider profile', type: Number })
-  @ApiResponse({ status: 200, description: 'Provider listing approved' })
-  approveProvider(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.approveProvider(id);
-  }
-
-  @Patch('providers/:id/reject')
-  @ApiOperation({ summary: 'Reject a provider listing' })
-  @ApiParam({ name: 'id', description: 'Numeric ID of the provider profile', type: Number })
-  @ApiResponse({ status: 200, description: 'Provider listing rejected' })
-  rejectProvider(
+  @Patch('providers/:id/action')
+  @ApiOperation({ summary: 'Approve, reject, or delete a provider listing' })
+  @ApiParam({
+    name: 'id',
+    description: 'Numeric ID of the provider profile',
+    type: Number,
+  })
+  @ApiBody({ type: ProviderActionDto })
+  @ApiResponse({ status: 200, description: 'Provider action completed' })
+  providerAction(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RejectProviderDto,
+    @Body() dto: ProviderActionDto,
   ) {
-    return this.adminService.rejectProvider(id, dto);
+    return this.adminService.providerAction(id, dto);
   }
 
   @Patch('users/:id/role')
@@ -117,12 +97,5 @@ export class AdminController {
     @Body() dto: UpdateUserRoleDto,
   ) {
     return this.adminService.updateUserRole(id, dto);
-  }
-
-  @Get('reports/usage')
-  @ApiOperation({ summary: 'Get platform usage report' })
-  @ApiResponse({ status: 200, description: 'Usage report returned' })
-  getUsageReport() {
-    return this.adminService.getUsageReport();
   }
 }

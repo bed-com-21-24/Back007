@@ -95,7 +95,11 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('Invalid email or password');
     }
     return {
-      access_token: this.jwtService.sign({ sub: user.id, email: user.email }),
+      access_token: this.jwtService.sign({
+        sub: user.id,
+        email: user.email,
+        tokenType: 'access',
+      }),
     };
   }
 
