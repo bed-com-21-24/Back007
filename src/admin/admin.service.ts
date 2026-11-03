@@ -1,17 +1,21 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { User } from '../users/entities/user.entity';
 import { Provider } from '../providers/entities/provider.entity';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { RejectProviderDto } from './dto/reject-provider.dto';
-import { UpdateUserDto } from '../users/dto/update-user.dto';
+import { AdminUpdateUserDto } from './dto/admin-update-user.dto';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { ProviderActionDto } from './dto/provider-action.dto';
+import { Report } from '../safety/entities/report.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -22,6 +26,9 @@ export class AdminService {
 
     @InjectRepository(Provider)
     private readonly providerRepository: Repository<Provider>,
+
+    @InjectRepository(Report)
+    private readonly reportRepository: Repository<Report>,
   ) {}
 
   private async countUsers(): Promise<number> {
@@ -39,17 +46,82 @@ export class AdminService {
     };
   }
 
+  async getOverview() {
+    const [dashboard, users, usageReport, reports] = await Promise.all([
+      this.getDashboard(),
+      this.getUsers(),
+      this.getUsageReport(),
+      this.getReports(),
+    ]);
+
+    return { dashboard, users, usageReport, reports };
+  }
+
   async getUsers() {
     const users = await this.userRepository.find({
       relations: { provider: true },
     });
 
-    return users.map(({ password, provider, ...user }) => ({
+    return users.map(({ password, refreshTokenHash, provider, ...user }) => ({
       ...user,
       provider: provider
         ? (({ user: linkedUser, ...publicProvider }) => publicProvider)(provider)
         : null,
     }));
+  }
+
+  async getReports() {
+    const reports = await this.reportRepository.find({
+      order: { createdAt: 'DESC' },
+    });
+    const userIds = [
+      ...new Set(
+        reports.flatMap((report) => [report.reporterId, report.reportedUserId]),
+      ),
+    ];
+    let users: User[] = [];
+    let providers: Provider[] = [];
+    if (userIds.length > 0) {
+      [users, providers] = await Promise.all([
+        this.userRepository.find({ where: { id: In(userIds) } }),
+        this.providerRepository.find({ where: { userId: In(userIds) } }),
+      ]);
+    }
+    const providerByUserId = new Map(
+      providers.map((provider) => [provider.userId, provider]),
+    );
+    const userById = new Map(
+      users.map((user) => {
+        const { password, refreshTokenHash, ...safeUser } = user;
+        const provider = providerByUserId.get(user.id);
+        const safeProvider = provider
+          ? (({ user: linkedUser, ...publicProvider }) => publicProvider)(
+              provider,
+            )
+          : null;
+        return [
+          user.id,
+          { ...safeUser, provider: safeProvider },
+        ] as const;
+      }),
+    );
+
+    return reports.map((report) => {
+      const reportedUser = userById.get(report.reportedUserId) ?? null;
+      const provider = providerByUserId.get(report.reportedUserId);
+      return {
+        ...report,
+        reporter: userById.get(report.reporterId) ?? null,
+        reportedUser,
+        location: provider
+          ? {
+              latitude: provider.latitude,
+              longitude: provider.longitude,
+              address: provider.location,
+            }
+          : null,
+      };
+    });
   }
 
   async createAdmin(dto: CreateAdminDto) {
@@ -67,11 +139,11 @@ export class AdminService {
       status: 'active',
     });
     const savedAdmin = await this.userRepository.save(admin);
-    const { password, ...safeAdmin } = savedAdmin;
+    const { password, refreshTokenHash, ...safeAdmin } = savedAdmin;
     return safeAdmin;
   }
 
-  async updateUser(id: number, dto: UpdateUserDto) {
+  async updateUser(id: number, dto: AdminUpdateUserDto) {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -79,35 +151,19 @@ export class AdminService {
 
     Object.assign(user, dto);
     const savedUser = await this.userRepository.save(user);
-    const { password, ...safeUser } = savedUser;
+    const { password, refreshTokenHash, ...safeUser } = savedUser;
     return safeUser;
   }
 
-  async suspendUser(id: number) {
+  async updateUserStatus(id: number, dto: UpdateUserStatusDto) {
     const user = await this.userRepository.findOneBy({ id });
-
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    user.status = 'suspended';
-
+    user.status = dto.status;
     const savedUser = await this.userRepository.save(user);
-    const { password, ...safeUser } = savedUser;
-    return safeUser;
-  }
-
-  async banUser(id: number) {
-    const user = await this.userRepository.findOneBy({ id });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    user.status = 'banned';
-
-    const savedUser = await this.userRepository.save(user);
-    const { password, ...safeUser } = savedUser;
+    const { password, refreshTokenHash, ...safeUser } = savedUser;
     return safeUser;
   }
 
@@ -154,6 +210,22 @@ export class AdminService {
     };
   }
 
+  async providerAction(id: number, dto: ProviderActionDto) {
+    switch (dto.action) {
+      case 'approve':
+        return this.approveProvider(id);
+      case 'reject':
+        if (!dto.reason?.trim()) {
+          throw new BadRequestException(
+            'A reason is required when rejecting a provider listing',
+          );
+        }
+        return this.rejectProvider(id, { reason: dto.reason });
+      case 'delete':
+        return this.deleteProvider(id);
+    }
+  }
+
   async updateUserRole(id: number, dto: UpdateUserRoleDto) {
     const user = await this.userRepository.findOneBy({ id });
 
@@ -164,7 +236,7 @@ export class AdminService {
     user.role = dto.role;
 
     const savedUser = await this.userRepository.save(user);
-    const { password, ...safeUser } = savedUser;
+    const { password, refreshTokenHash, ...safeUser } = savedUser;
     return safeUser;
   }
 

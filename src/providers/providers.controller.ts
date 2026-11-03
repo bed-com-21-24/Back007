@@ -46,14 +46,14 @@ export class ProvidersController {
     return this.discoveryService.search(query);
   }
 
-    @Get('me')
+  @Get('me')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get the current user provider listing' })
   findMe(@Req() req: AuthenticatedRequest) {
     return this.providersService.findMe(this.getUserId(req));
   }
-  
+
   @Get(':id')
   @ApiOperation({ summary: 'Get the public profile of one provider' })
   findOne(@Param('id', ParseIntPipe) id: number) {
