@@ -14,6 +14,7 @@ describe('AuthService', () => {
     create: jest.Mock;
     save: jest.Mock;
   };
+  let jwtService: { sign: jest.Mock };
   let resetExistingPassword: boolean;
 
   beforeEach(async () => {
@@ -23,11 +24,12 @@ describe('AuthService', () => {
       create: jest.fn((user: Partial<User>) => user as User),
       save: jest.fn(),
     };
+    jwtService = { sign: jest.fn() };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: getRepositoryToken(User), useValue: users },
-        { provide: JwtService, useValue: { sign: jest.fn() } },
+        { provide: JwtService, useValue: jwtService },
         {
           provide: ConfigService,
           useValue: {
@@ -50,6 +52,25 @@ describe('AuthService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('issues an access token accepted by the JWT strategy', async () => {
+    const user = {
+      id: 12,
+      email: 'admin@example.com',
+      password: await bcrypt.hash('admin-password', 10),
+    } as User;
+    users.findOne.mockResolvedValue(user);
+    jwtService.sign.mockReturnValue('signed-access-token');
+
+    await expect(
+      service.login({ email: user.email, password: 'admin-password' }),
+    ).resolves.toEqual({ access_token: 'signed-access-token' });
+    expect(jwtService.sign).toHaveBeenCalledWith({
+      sub: user.id,
+      email: user.email,
+      tokenType: 'access',
+    });
   });
 
   it('creates the predefined administrator using a hashed environment password', async () => {

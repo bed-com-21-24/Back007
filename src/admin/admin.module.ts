@@ -6,11 +6,12 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { User } from '../users/entities/user.entity';
 import { Provider } from '../providers/entities/provider.entity';
+import { Report } from '../safety/entities/report.entity';
 import { AuthModule } from '../auth/auth.module';
 import { AdminAuthGuard } from './admin-auth.guard';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Provider]), AuthModule],
+  imports: [TypeOrmModule.forFeature([User, Provider, Report]), AuthModule],
   controllers: [AdminController],
   providers: [AdminService, AdminAuthGuard],
 })
