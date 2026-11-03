@@ -134,7 +134,7 @@ export class AuthService implements OnModuleInit {
     access_token: accessToken,
     refresh_token: refreshToken,
     expires_in: 600,
-    refresh_expires_in: 900,
+    refresh_expires_in: 12000,
   };
 }
 
