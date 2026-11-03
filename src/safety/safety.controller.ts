@@ -18,13 +18,19 @@ import {
 export class SafetyController {
   constructor(private blocks: BlocksService, private reports: ReportsService) {}
 
-  @Post(':id/report')
-  @ApiOperation({ summary: 'Report a user' })
-  @ApiParam({ name: 'id', description: 'Numeric ID of the reported user', type: Number })
-  @ApiResponse({ status: 201, description: 'User report submitted' })
-  report(@Req() req: any, @Param('id', ParseIntPipe) id: number, @Body() dto: ReportUserDto) {
-    return this.reports.create(req.user.id, id, dto);
-  }
+ @Post(':id/report')
+@ApiOperation({ summary: 'Report a user, optionally blocking them too' })
+@ApiResponse({ status: 201, description: 'Report saved. "blocked" says whether a block was applied' })
+@ApiResponse({ status: 409, description: 'You already have a pending report against this user' })
+async report(
+  @Req() req: any,
+  @Param('id', ParseIntPipe) id: number,
+  @Body() dto: ReportUserDto,
+) {
+  const report = await this.reports.create(req.user.id, id, dto);
+  if (dto.alsoBlock) await this.blocks.block(req.user.id, id);
+  return { report, blocked: dto.alsoBlock === true };
+}
 
   @Post(':id/block')
   @ApiOperation({ summary: 'Block a user' })
