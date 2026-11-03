@@ -211,7 +211,7 @@ async login(loginDto: LoginDto) {
     access_token: newAccessToken,
     refresh_token: newRefreshToken,
     expires_in: 600,
-    refresh_expires_in: 900,
+    refresh_expires_in: 12000,
   };
 }
  async logout(userId: number) {
